@@ -13,8 +13,10 @@ Type: Empty(Uncheck)，Accept，Reject
 */ 
 
 const list_sheet_name = "list";
-const line_notify_token = "bKmolbepcsiVxYB84Ulh4EU00xr5jhmJlidTtRvE6LV";
+const line_notify_token = "LINE_NOTIFY_TOKEN";
 const refresh_time = 120;
+const search_city = "台中市";
+const search_query = "?is_new_list=1&type=1&kind=2&searchtype=1&region=8&section=107,100,101,99&rentprice=1,7000&area=7,20&order=time&orderType=desc";
 
 function check_rent_item_no_duplicated(search_sheet, post_id) {
   let list_sheet = SpreadsheetApp.getActive().getSheetByName(search_sheet);
@@ -76,18 +78,6 @@ function get_formated_rent_info(search_sheet, rent_result) {
   return format_rent_array;
 }
 
-function get_rent_data() {
-  const last_timestamp = get_refresh_timestamp();
-
-  const rent_result = get_rent_result();
-  const rent_json = JSON.parse(rent_result);
-  const rent_array = rent_json["data"]["data"];
-
-  const result = rent_array.filter(x => x.refreshtime > last_timestamp);
-  
-  return result
-}
-
 function get_rent_cover_img(rent_detail_url) {
   const response = UrlFetchApp.fetch(rent_detail_url);
   let html = response.getContentText();
@@ -103,17 +93,30 @@ function get_rent_cover_img(rent_detail_url) {
   return "https://www.moedict.tw/%E6%B2%92.png"
 }
 
+function get_rent_data() {
+  const last_timestamp = get_refresh_timestamp();
+
+  const rent_result = get_rent_result();
+  const rent_json = JSON.parse(rent_result);
+  const rent_array = rent_json["data"]["data"];
+
+  const result = rent_array.filter(x => x.refreshtime > last_timestamp);
+  
+  return result
+}
+
 function get_rent_result() {
   const rent_search_host = "https://rent.591.com.tw/home/search/rsList";
-  let rent_search_url = `${rent_search_host}?is_new_list=1&type=1&kind=2&searchtype=1&region=8&section=107,100,101,99&rentprice=1,7000&area=7,20&order=time&orderType=desc`;
+  let rent_search_url = `${rent_search_host}${search_query}`;
 
   const header_info = get_csrf_token();
   const csrf_token = header_info[0];
   const cookie = header_info[1];
+  const search_city_url_encode = encodeURIComponent(search_city);
 
   const header = {
     "X-CSRF-TOKEN": csrf_token,
-    "Cookie": `${cookie}; urlJumpIp=8; urlJumpIpByTxt=%E5%8F%B0%E4%B8%AD%E5%B8%82;`,
+    "Cookie": `${cookie}; urlJumpIp=8; urlJumpIpByTxt=${search_city_url_encode};`,
     'Content-Type': 'application/json'
   }
 
@@ -134,6 +137,19 @@ function get_refresh_timestamp() {
   const date = new Date();
   const unix_timestamp = (Math.floor((date.getTime()/1000)) - refresh_time).toString();
   return unix_timestamp;
+}
+
+function main() {
+  const rent_result = get_rent_data();
+  const rent_info = get_formated_rent_info(list_sheet_name, rent_result);
+  const rent_info_length = rent_info.length;
+  if (rent_info_length == 0) { return }
+
+  let list_sheet = SpreadsheetApp.getActive().getSheetByName(list_sheet_name);
+  list_sheet.insertRows(2, rent_info_length);
+
+  let range = list_sheet.getRange(`A2:M${rent_info_length + 1}`);
+  range.setValues(rent_info);
 }
 
 function send_to_line_notify(message, image_url) {
@@ -159,17 +175,4 @@ function send_to_line_notify(message, image_url) {
   };
   
   UrlFetchApp.fetch(line_notify_url, options);
-}
-
-function main() {
-  const rent_result = get_rent_data();
-  const rent_info = get_formated_rent_info(list_sheet_name, rent_result);
-  const rent_info_length = rent_info.length;
-  if (rent_info_length == 0) { return }
-
-  let list_sheet = SpreadsheetApp.getActive().getSheetByName(list_sheet_name);
-  list_sheet.insertRows(2, rent_info_length);
-
-  let range = list_sheet.getRange(`A2:M${rent_info_length + 1}`);
-  range.setValues(rent_info);
 }
