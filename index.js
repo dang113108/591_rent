@@ -78,6 +78,13 @@ function get_formated_rent_info(search_sheet, rent_result) {
   return format_rent_array;
 }
 
+function get_region_from_query(query) {
+  let reg_exp = new RegExp(".*region=([0-9]*).*", "gi");
+  let region_number = reg_exp.exec(query)[1];
+
+  return region_number;
+}
+
 function get_rent_cover_img(rent_detail_url) {
   const response = UrlFetchApp.fetch(rent_detail_url);
   let html = response.getContentText();
@@ -113,10 +120,11 @@ function get_rent_result() {
   const csrf_token = header_info[0];
   const cookie = header_info[1];
   const search_city_url_encode = encodeURIComponent(search_city);
+  let region_number = get_region_from_query(search_query);
 
   const header = {
     "X-CSRF-TOKEN": csrf_token,
-    "Cookie": `${cookie}; urlJumpIp=8; urlJumpIpByTxt=${search_city_url_encode};`,
+    "Cookie": `${cookie}; urlJumpIp=${region_number}; urlJumpIpByTxt=${search_city_url_encode};`,
     'Content-Type': 'application/json'
   }
 
