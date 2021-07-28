@@ -67,7 +67,7 @@ function get_formated_rent_info(search_sheet, rent_result) {
     let rent_street_name = rent_item["street_name"];
     let rent_area = rent_item["area"];
     let rent_floor = rent_item["floorInfo"];
-    let rent_cover = get_rent_cover_img(rent_url);
+    let rent_cover = get_rent_cover_img(rent_item["filename"]);
 
     let tmp_array = ["", rent_hyperlink, rent_price, "", "", "", rent_section_name+rent_street_name, "", rent_area, rent_floor, "", "", rent_post_id];
     format_rent_array.push(tmp_array);
@@ -86,14 +86,11 @@ function get_region_from_query(query) {
 }
 
 function get_rent_cover_img(rent_detail_url) {
-  const response = UrlFetchApp.fetch(rent_detail_url);
-  let html = response.getContentText();
+  let regex = new RegExp("(https:\/\/hp[0-9]\.591\.com\.tw\/house\/active\/[1-9][0-9]{3}\/[0-1][0-9]\/[0-3][0-9]\/[0-9]*_)[0-9]+x[0-9].*?\.jpg", "gi");
 
-  let cover_img_regex = new RegExp("    <meta property=\"og:image\" content=\"(https:\/\/hp[0-9]\.591\.com\.tw\/house\/active\/[1-9][0-9]{3}\/[0-1][0-9]\/[0-3][0-9]\/[0-9]*_765x517\.water3\.jpg)\" \/>", "gi");
-
-  let cover_img = cover_img_regex.exec(html);
+  let cover_img = regex.exec(rent_detail_url);
   if (cover_img) {
-    cover_img = cover_img[1];
+    cover_img = cover_img[1] + "765x517.crop.jpg";
     return cover_img
   }
   Logger.log(rent_detail_url);
