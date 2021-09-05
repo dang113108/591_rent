@@ -67,7 +67,7 @@ function get_formated_rent_info(search_sheet, rent_result) {
     let rent_street_name = rent_item["street_name"];
     let rent_area = rent_item["area"];
     let rent_floor = rent_item["floorInfo"];
-    let rent_cover = get_rent_cover_img(rent_url);
+    let rent_cover = get_rent_cover_img(rent_url, rent_post_id);
 
     let tmp_array = ["", rent_hyperlink, rent_price, "", "", "", rent_section_name+rent_street_name, "", rent_area, rent_floor, "", "", rent_post_id];
     format_rent_array.push(tmp_array);
@@ -85,7 +85,7 @@ function get_region_from_query(query) {
   return region_number;
 }
 
-function get_rent_cover_img(rent_detail_url) {
+function get_rent_cover_img(rent_detail_url, rent_post_id) {
   const response = UrlFetchApp.fetch(rent_detail_url);
   let html = response.getContentText();
 
@@ -96,6 +96,24 @@ function get_rent_cover_img(rent_detail_url) {
     cover_img = cover_img[1];
     return cover_img
   }
+
+  const fetch_and_get_first_photo = (_rent_post_id)=>{
+    const photo_list_url = `https://api.591.com.tw/tw/v1/house/photos?type=1&id=${_rent_post_id}`;
+    const photo_html_fetch = UrlFetchApp.fetch(photo_list_url);
+    const photo_html_text = photo_html_fetch.getContentText();
+    const photo = JSON.parse(photo_html_text);
+    const photo_list = photo.data.photos;
+    const first_img = photo_list[0];
+    return first_img.cutPhoto;
+  }
+
+  try { 
+    const first_img_url = fetch_and_get_first_photo(rent_post_id)
+    return first_img_url 
+  } catch (fetch_error) {
+    Logger.log(fetch_error)
+  }
+
   Logger.log(rent_detail_url);
   return "https://www.moedict.tw/%E6%B2%92.png"
 }
