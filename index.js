@@ -97,8 +97,8 @@ function get_rent_cover_img(rent_detail_url, rent_post_id) {
     return cover_img
   }
 
-  const fetch_and_get_first_photo = (_rent_post_id)=>{
-    const photo_list_url = `https://api.591.com.tw/tw/v1/house/photos?type=1&id=${_rent_post_id}`;
+  const fetch_and_get_first_photo = (_rent_id)=>{
+    const photo_list_url = `https://api.591.com.tw/tw/v1/house/photos?type=1&id=${_rent_id}`;
     const photo_html_fetch = UrlFetchApp.fetch(photo_list_url);
     const photo_html_text = photo_html_fetch.getContentText();
     const photo = JSON.parse(photo_html_text);
