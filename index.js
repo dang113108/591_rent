@@ -1,7 +1,6 @@
 /*
-Type: Empty(Uncheck)，Accept，Reject
 
-  拿到當前的 unixtime 然後透過更新時間篩選 now - ${refresh_time} 的物件，
+  拿到當前條件前三十筆的物件，
   拿到物件後先透過 postid 檢查當前列表中有沒有相同的 postid，
 
     有的話比較他們的價格，
@@ -14,9 +13,8 @@ Type: Empty(Uncheck)，Accept，Reject
 
 const list_sheet_name = "list";
 const line_notify_token = "LINE_NOTIFY_TOKEN";
-const refresh_time = 120;
-const search_city = "台中市";
-const search_query = "?is_new_list=1&type=1&kind=2&searchtype=1&region=8&section=107,100,101,99&rentprice=1,7000&area=7,20&order=time&orderType=desc";
+const search_city = "新北市";
+const search_query = "?is_format_data=1&is_new_list=1&type=1&region=3&section=26,44,43,38&searchtype=1&kind=2&other=balcony_1&showMore=1&option=washer&multiNotice=not_cover,all_sex,boy&order=posttime&orderType=desc&rentprice=1,12500";
 
 function check_rent_item_no_duplicated(search_sheet, post_id) {
   let list_sheet = SpreadsheetApp.getActive().getSheetByName(search_sheet);
@@ -37,7 +35,7 @@ function get_csrf_token() {
 
   let response = UrlFetchApp.fetch(rent_home_url);
   let csrf_token = reg_exp.exec(response)[1];
-  const cookie = response.getAllHeaders()["Set-Cookie"][4];
+  const cookie = response.getAllHeaders()["Set-Cookie"][5];
   // Logger.log(`CSRF TOKEN:  ${csrf_token}`);
   // Logger.log(`Cookie: ${cookie}`)
 
@@ -52,27 +50,29 @@ function get_formated_rent_info(search_sheet, rent_result) {
   for (let rent_index = 0; rent_index < rent_result_length; rent_index++) {
 
     let rent_item = rent_result[rent_index];
-    let rent_post_id = rent_item["id"];
-    let rent_price = rent_item["price"];
+    Logger.log(rent_item);
+    let rent_post_id = rent_item["post_id"];
+    let rent_price = `${rent_item["price"]} ${rent_item["price_unit"]}`;
     let duplicated_price = check_rent_item_no_duplicated(search_sheet, rent_post_id);
 
     if (duplicated_price == rent_price) {
       continue;
     }
 
-    let rent_title = rent_item["address_img"];
+    let rent_title = rent_item["title"];
     let rent_url = `https://rent.591.com.tw/rent-detail-${rent_post_id}.html`;
     let rent_hyperlink = `=HYPERLINK("${rent_url}", "${rent_title}")`;
     let rent_section_name = rent_item["section_name"];
     let rent_street_name = rent_item["street_name"];
     let rent_area = rent_item["area"];
-    let rent_floor = rent_item["floorInfo"];
+    let rent_location = rent_item["location"];
+    let rent_floor = rent_item["floor_str"];
     let rent_cover = get_rent_cover_img(rent_url, rent_post_id);
 
-    let tmp_array = ["", rent_hyperlink, rent_price, "", "", "", rent_section_name+rent_street_name, "", rent_area, rent_floor, "", "", rent_post_id];
+    let tmp_array = ["", rent_hyperlink, rent_price, "", "", "", rent_section_name+rent_street_name+" / "+rent_location, "", rent_area, rent_floor, "", "", rent_post_id];
     format_rent_array.push(tmp_array);
 
-    let line_message = `${rent_post_id}\n${rent_title}\n${rent_url}\n$ ${rent_price}\n${rent_section_name} ${rent_street_name}\n${rent_area}坪，${rent_floor}`;
+    let line_message = `${rent_post_id}\n${rent_title}\n${rent_url}\n$ ${rent_price}\n${rent_section_name} ${rent_street_name}\n${rent_location}\n${rent_area}坪，${rent_floor}`;
     send_to_line_notify(line_message, rent_cover);
   }
   return format_rent_array;
@@ -119,15 +119,11 @@ function get_rent_cover_img(rent_detail_url, rent_post_id) {
 }
 
 function get_rent_data() {
-  const last_timestamp = get_refresh_timestamp();
-
   const rent_result = get_rent_result();
   const rent_json = JSON.parse(rent_result);
   const rent_array = rent_json["data"]["data"];
-
-  const result = rent_array.filter(x => x.refreshtime > last_timestamp);
   
-  return result
+  return rent_array
 }
 
 function get_rent_result() {
@@ -151,18 +147,12 @@ function get_rent_result() {
     "headers": header,
     "muteHttpExceptions": true
   };
-  
+
   const response = UrlFetchApp.fetch(rent_search_url, options);
 
   // Logger.log(`Rent Result: ${response.getContentText()}`);
 
   return response.getContentText()
-}
-
-function get_refresh_timestamp() {
-  const date = new Date();
-  const unix_timestamp = (Math.floor((date.getTime()/1000)) - refresh_time).toString();
-  return unix_timestamp;
 }
 
 function main() {
