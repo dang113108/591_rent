@@ -35,7 +35,14 @@ function get_csrf_token() {
 
   let response = UrlFetchApp.fetch(rent_home_url);
   let csrf_token = reg_exp.exec(response)[1];
-  const cookie = response.getAllHeaders()["Set-Cookie"][5];
+  const all_cookie = response.getAllHeaders()["Set-Cookie"];
+  let cookie;
+  for (let i = 0; i < all_cookie.length; i++) {
+    if (all_cookie[i].includes("591_new_session")) {
+      cookie = all_cookie[i];
+      break;
+    }
+  }
   // Logger.log(`CSRF TOKEN:  ${csrf_token}`);
   // Logger.log(`Cookie: ${cookie}`)
 
