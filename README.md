@@ -1,5 +1,21 @@
 # 超簡單一鍵推播 591 租屋資訊完全免 Coding－透過 Google Sheet 與 LINE Notify 
 
+----
+
+### 2022/01/23 更新：
+新年快樂～修復之前寫死 Cookie 導致的問題。
+Github:
+[https://github.com/dang113108/591_rent](https://github.com/dang113108/591_rent)
+Commit: [https://github.com/dang113108/591_rent/commit/4d6de2f7ee527cf450f17894fcc17935062fe895](https://github.com/dang113108/591_rent/commit/4d6de2f7ee527cf450f17894fcc17935062fe895)
+
+----
+
+### 2021/11/08 更新：
+修復因 591 改版導致整組壞掉的問題！
+Github: [https://github.com/dang113108/591_rent/tree/dev](https://github.com/dang113108/591_rent/tree/dev)
+
+----
+
 ### 2021/09/08 更新：
 感謝邦友 [flier268](https://ithelp.ithome.com.tw/users/20132779/profile), [travis668](https://github.com/travis668) 幫忙修復因 591 改版導致抓不到 cover image 的問題！
 Github: [https://github.com/dang113108/591_rent/tree/dev](https://github.com/dang113108/591_rent/tree/dev)
@@ -186,4 +202,4 @@ LINE Notify 首頁：[https://notify-bot.line.me/zh_TW/](https://notify-bot.line
 ----
 
 以上分享，有任何問題歡迎留言提問 : )
-Github: [https://github.com/dang113108/591_rent/tree/dev](https://github.com/dang113108/591_rent/tree/dev)
+Github: [https://github.com/dang113108/591_rent](https://github.com/dang113108/591_rent)
