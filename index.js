@@ -87,6 +87,9 @@ function get_formated_rent_info(search_sheet, rent_result) {
 
 function get_region_from_query(query) {
   let reg_exp = new RegExp(".*region=([0-9]*).*", "gi");
+  if(reg_exp.test(query) === false){
+    return 1 // default is Taipei;
+  }
   let region_number = reg_exp.exec(query)[1];
 
   return region_number;
