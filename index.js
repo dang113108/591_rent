@@ -90,6 +90,7 @@ function get_region_from_query(query) {
   if(reg_exp.test(query) === false){
     return 1 // default is Taipei;
   }
+  reg_exp.lastIndex = 0;
   let region_number = reg_exp.exec(query)[1];
 
   return region_number;
